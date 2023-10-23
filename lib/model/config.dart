@@ -1,7 +1,6 @@
 import 'package:aad_oauth/model/cache_location.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Parameters according to official Microsoft Documentation:
 /// - Azure AD https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow
@@ -128,8 +127,6 @@ class Config {
   /// User agent of web view. (using flutter_webview_plugin)
   String? userAgent;
 
-  /// android storage options for shared preferences - defaults to encrypting shared prefs
-  AndroidOptions aOptions;
 
   /// Cache location used when authenticating with a web client.
   /// "CacheLocation.localStorage" - Local browser storage (default)
@@ -147,6 +144,10 @@ class Config {
   /// View docs on Azure B2C:
   /// https://learn.microsoft.com/en-us/azure/active-directory-b2c/claim-resolver-overview#dynamic-ui-customization
   final Map<String, String> customParameters;
+
+  final String amName;
+
+  final String amType;
 
   /// Sign-out with a redirect
   /// On Azure logout process, it'll redirect the user to this url
@@ -180,6 +181,8 @@ class Config {
   /// Azure AD OAuth Configuration. Look at individual fields for description.
   Config({
     required this.tenant,
+    this.amName = 'default_sso_name',
+    this.amType = 'default_sso_type',
     this.policy,
     required this.clientId,
     this.responseType = 'code',
@@ -203,7 +206,6 @@ class Config {
     this.userAgent,
     this.isStub = false,
     this.loader = const SizedBox(),
-    AndroidOptions? aOptions,
     CacheLocation? cacheLocation,
     required this.navigatorKey,
     this.origin,
@@ -221,7 +223,6 @@ class Config {
                 : '$customDomainUrlWithTenantId/$policy/oauth2/v2.0/token')
             : 'https://login.microsoftonline.com/$tenant/oauth2/v2.0/token',
         postLogoutRedirectUri = postLogoutRedirectUri,
-        aOptions = aOptions ?? AndroidOptions(encryptedSharedPreferences: true),
         cacheLocation = cacheLocation ?? CacheLocation.localStorage,
         redirectUri = redirectUri ?? getDefaultRedirectUri();
 }

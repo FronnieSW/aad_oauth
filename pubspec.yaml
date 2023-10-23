@@ -10,14 +10,18 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_secure_storage: ^8.0.0
-  webview_flutter: ^4.2.2
+  webview_flutter: ^4.4.1
   js: any
-  http: ^1.1.0
+  http: 0.13.6
   pedantic: ^1.11.1
   shared_preferences: ^2.2.0
   dartz: ^0.10.1
   equatable: ^2.0.5
+
+  flutter_account_manager:
+    git:
+      url: https://read-token:bChKzCypbiFAR1SGzysd@gitlab.com/be-train/mobile-apps/flutter_account_manager.git
+      ref: feature/sso
 
 dev_dependencies:
   flutter_test:
