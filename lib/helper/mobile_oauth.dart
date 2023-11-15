@@ -70,6 +70,8 @@ class MobileOAuth extends CoreOAuth {
   /// both access and refresh tokens are invalid, the web gui will be used.
   Future<Either<Failure, Token>> _authorization(
       {bool refreshIfAvailable = false}) async {
+    await _requestCode.clearCookies();
+
     var token = TokenUtils.fromJsonString((await _accountManager.loadToken()));
 
     if (!refreshIfAvailable) {

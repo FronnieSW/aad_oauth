@@ -223,6 +223,6 @@ class Config {
                 : '$customDomainUrlWithTenantId/$policy/oauth2/v2.0/token')
             : 'https://login.microsoftonline.com/$tenant/oauth2/v2.0/token',
         postLogoutRedirectUri = postLogoutRedirectUri,
-        cacheLocation = cacheLocation ?? CacheLocation.localStorage,
+        cacheLocation = cacheLocation ?? CacheLocation.sessionStorage,
         redirectUri = redirectUri ?? getDefaultRedirectUri();
 }
