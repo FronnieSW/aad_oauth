@@ -28,6 +28,14 @@ class Token {
   /// How long the access token is valid (in seconds).
   int? expiresIn;
 
+  String? clientId;
+
+  String? scope;
+
+  String? redirectUri;
+
+  String? clientSecret;
+
   /// Access token enabling to securely call protected APIs on behalf of the user.
   Token({this.accessToken});
 
@@ -61,6 +69,19 @@ class Token {
     if (model.idToken != null) {
       ret['id_token'] = model.idToken;
     }
+    if (model.clientId != null) {
+      ret['client_id'] = model.clientId;
+    }
+    if (model.scope != null) {
+      ret['scope'] = model.scope;
+    }
+    if (model.redirectUri != null) {
+      ret['redirect_uri'] = model.redirectUri;
+    }
+    if (model.clientSecret != null) {
+      ret['client_secret'] = model.clientSecret;
+    }
+
     return ret;
   }
 
@@ -88,7 +109,10 @@ class Token {
         ? DateTime.fromMillisecondsSinceEpoch(map['expire_timestamp'])
         : model.issueTimeStamp
             .add(Duration(seconds: model.expiresIn! - model.expireOffSet));
-
+    model.clientId = map['client_id'];
+    model.scope = map['scope'];
+    model.redirectUri = map['redirect_uri'];
+    model.clientSecret = map['client_secret'];
     return model;
   }
 
@@ -102,5 +126,9 @@ class Token {
   /// Check if Refresh Token is set.
   bool hasRefreshToken() {
     return refreshToken != null;
+  }
+
+  bool refreshAvailable() {
+    return refreshToken != null && clientId != null && scope != null && redirectUri != null && clientSecret != null;
   }
 }

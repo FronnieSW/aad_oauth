@@ -22,9 +22,9 @@ class RequestToken {
   }
 
   Future<Either<Failure, Token>> requestRefreshToken(
-      String refreshToken) async {
+      Token token) async {
     final _tokenRefreshRequest =
-        TokenRefreshRequestDetails(config, refreshToken);
+        TokenRefreshRequestDetails(config, token);
     return await _sendTokenRequest(_tokenRefreshRequest.url,
         _tokenRefreshRequest.params, _tokenRefreshRequest.headers);
   }
@@ -36,6 +36,10 @@ class RequestToken {
       final tokenJson = json.decode(response.body);
       if (tokenJson is Map<String, dynamic>) {
         var token = Token.fromJson(tokenJson);
+        token.clientId = params['client_id'];
+        token.scope = params['scope'];
+        token.redirectUri = params['redirect_uri'];
+        token.clientSecret = params['client_secret'];
         return Right(token);
       }
       return Left(

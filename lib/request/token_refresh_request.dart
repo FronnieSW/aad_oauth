@@ -1,18 +1,19 @@
 import 'package:aad_oauth/model/config.dart';
+import 'package:aad_oauth/model/token.dart';
 
 class TokenRefreshRequestDetails {
   final String url;
   final Map<String, String> params;
   final Map<String, String> headers;
 
-  TokenRefreshRequestDetails(Config config, String refreshToken)
+  TokenRefreshRequestDetails(Config config, Token token)
       : url = config.tokenUrl,
         params = {
-          'client_id': config.clientId,
-          'scope': config.scope,
-          'redirect_uri': config.redirectUri,
+          'client_id': token.clientId!,
+          'scope': token.scope!,
+          'redirect_uri': token.redirectUri!,
           'grant_type': 'refresh_token',
-          'refresh_token': refreshToken
+          'refresh_token': token.refreshToken!
         },
         headers = {
           'Accept': 'application/json',
@@ -20,7 +21,7 @@ class TokenRefreshRequestDetails {
           if (config.origin != null) 'Origin': config.origin!,
         } {
     if (config.clientSecret != null) {
-      params.putIfAbsent('client_secret', () => config.clientSecret!);
+      params.putIfAbsent('client_secret', () => token.clientSecret!);
     }
   }
 }
