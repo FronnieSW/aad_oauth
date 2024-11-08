@@ -37,6 +37,10 @@ class MobileOAuth extends CoreOAuth {
     return await _authorization(refreshIfAvailable: refreshIfAvailable);
   }
 
+  @override
+  Future<Either<Failure, Token>> refreshTokens() async =>
+      await _performRefresh();
+
   /// Retrieve cached OAuth Access Token.
   @override
   Future<String?> getAccessToken() async =>
@@ -81,8 +85,7 @@ class MobileOAuth extends CoreOAuth {
     }
 
     if (token.refreshAvailable()) {
-      final result =
-          await _requestToken.requestRefreshToken(token);
+      final result = await _requestToken.requestRefreshToken(token);
       //If refresh token request throws an exception, we have to do
       //a fullAuthFlow.
       result.fold(
@@ -102,6 +105,33 @@ class MobileOAuth extends CoreOAuth {
         return Left(failure);
       }
     }
+    await _accountManager.setToken(TokenUtils.toJsonString(token));
+    return Right(token);
+  }
+
+  Future<Either<Failure, Token>> _performRefresh() async {
+    var token = TokenUtils.fromJsonString((await _accountManager.loadToken()));
+    if (!token.refreshAvailable()) {
+      return Left(
+        AadOauthFailure(
+          ErrorType.AccessDeniedOrAuthenticationCanceled,
+          'Refresh is not available',
+        ),
+      );
+    }
+
+    await _requestCode.clearCookies();
+
+    final result = await _requestToken.requestRefreshToken(token);
+    var failure;
+    result.fold(
+      (l) => failure = l,
+      (r) => token = r,
+    );
+    if (failure != null) {
+      return Left(failure);
+    }
+
     await _accountManager.setToken(TokenUtils.toJsonString(token));
     return Right(token);
   }

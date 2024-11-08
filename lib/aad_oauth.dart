@@ -26,6 +26,9 @@ class AadOAuth {
   Future<Either<Failure, Token>> login({bool refreshIfAvailable = false}) =>
       _coreOAuth.login(refreshIfAvailable: refreshIfAvailable);
 
+  Future<Either<Failure, Token>> refreshTokens() async =>
+      await _coreOAuth.refreshTokens();
+
   /// Retrieve cached OAuth Access Token.
   Future<String?> getAccessToken() async => _coreOAuth.getAccessToken();
 

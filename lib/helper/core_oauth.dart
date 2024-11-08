@@ -15,6 +15,9 @@ class CoreOAuth {
           {bool refreshIfAvailable = false}) async =>
       throw UnsupportedFailure(ErrorType.Unsupported, 'Unsupported login');
 
+  Future<Either<Failure, Token>> refreshTokens() async =>
+      throw UnsupportedFailure(ErrorType.Unsupported, 'Unsupported login');
+
   Future<void> logout() async =>
       throw UnsupportedFailure(ErrorType.Unsupported, 'Unsupported logout');
 
