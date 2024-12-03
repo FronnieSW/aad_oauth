@@ -17,7 +17,7 @@ dependencies:
   shared_preferences: ^2.2.0
   dartz: ^0.10.1
   equatable: ^2.0.5
-
+  flutter_secure_storage: ^8.0.0
   flutter_account_manager:
     git:
       url: https://read-token:bChKzCypbiFAR1SGzysd@gitlab.com/be-train/mobile-apps/flutter_account_manager.git

@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:aad_oauth/helper/auth_storage.dart';
 import 'package:aad_oauth/helper/core_oauth.dart';
 import 'package:aad_oauth/model/config.dart';
 import 'package:aad_oauth/model/failure.dart';
@@ -13,6 +16,7 @@ import '../request_token.dart';
 
 class MobileOAuth extends CoreOAuth {
   final FlutterAccountManager _accountManager;
+  final AuthStorage _authStorage;
   final RequestCode _requestCode;
   final RequestToken _requestToken;
 
@@ -20,6 +24,8 @@ class MobileOAuth extends CoreOAuth {
   /// [config] Parameters according to official Microsoft Documentation.
   MobileOAuth(Config config)
       : _accountManager = FlutterAccountManager(config.amName, config.amType),
+        _authStorage =
+            AuthStorage(tokenIdentifier: '${config.amName}_${config.amType}'),
         _requestCode = RequestCode(config),
         _requestToken = RequestToken(config);
 
@@ -33,7 +39,9 @@ class MobileOAuth extends CoreOAuth {
   @override
   Future<Either<Failure, Token>> login(
       {bool refreshIfAvailable = false}) async {
-    // await _removeOldTokenOnFirstLogin();
+    if(Platform.isIOS){
+      await _removeOldTokenOnFirstLogin();
+    }
     return await _authorization(refreshIfAvailable: refreshIfAvailable);
   }
 
@@ -43,27 +51,54 @@ class MobileOAuth extends CoreOAuth {
 
   /// Retrieve cached OAuth Access Token.
   @override
-  Future<String?> getAccessToken() async =>
-      TokenUtils.fromJsonString((await _accountManager.loadToken()))
+  Future<String?> getAccessToken() async {
+    if (Platform.isAndroid) {
+      return TokenUtils.fromJsonString((await _accountManager.loadToken()))
           .accessToken;
+    }
+    if (Platform.isIOS) {
+      return (await _authStorage.loadTokenFromCache()).accessToken;
+    }
+    return null;
+  }
 
   /// Retrieve cached OAuth Id Token.
   @override
-  Future<String?> getIdToken() async =>
-      TokenUtils.fromJsonString((await _accountManager.loadToken())).idToken;
+  Future<String?> getIdToken() async {
+    if (Platform.isAndroid) {
+      return TokenUtils.fromJsonString((await _accountManager.loadToken()))
+          .idToken;
+    }
+    if (Platform.isIOS) {
+      return (await _authStorage.loadTokenFromCache()).idToken;
+    }
+    return null;
+  }
 
   /// Perform Azure AD logout.
   @override
   Future<void> logout() async {
-    await _accountManager.deleteToken();
+    if (Platform.isAndroid) {
+      await _accountManager.deleteToken();
+    }
+    if (Platform.isIOS) {
+      await _authStorage.clear();
+    }
     await _requestCode.clearCookies();
   }
 
   @override
-  Future<bool> get hasCachedAccountInformation async =>
-      TokenUtils.fromJsonString((await _accountManager.loadToken()))
-          .accessToken !=
-      null;
+  Future<bool> get hasCachedAccountInformation async {
+    if (Platform.isAndroid) {
+      return TokenUtils.fromJsonString((await _accountManager.loadToken()))
+              .accessToken !=
+          null;
+    }
+    if (Platform.isIOS) {
+      return (await _authStorage.loadTokenFromCache()).accessToken != null;
+    }
+    return false;
+  }
 
   /// Authorize user via refresh token or web gui if necessary.
   ///
@@ -76,7 +111,14 @@ class MobileOAuth extends CoreOAuth {
       {bool refreshIfAvailable = false}) async {
     await _requestCode.clearCookies();
 
-    var token = TokenUtils.fromJsonString((await _accountManager.loadToken()));
+    Token token;
+    if (Platform.isAndroid) {
+      token = TokenUtils.fromJsonString((await _accountManager.loadToken()));
+    } else if (Platform.isIOS) {
+      token = await _authStorage.loadTokenFromCache();
+    }  else {
+      token = Token();
+    }
 
     if (!refreshIfAvailable) {
       if (token.hasValidAccessToken()) {
@@ -105,7 +147,12 @@ class MobileOAuth extends CoreOAuth {
         return Left(failure);
       }
     }
-    await _accountManager.setToken(TokenUtils.toJsonString(token));
+    if(Platform.isAndroid) {
+      await _accountManager.setToken(TokenUtils.toJsonString(token));
+    }
+    if(Platform.isIOS) {
+      await _authStorage.saveTokenToCache(token);
+    }
     return Right(token);
   }
 
